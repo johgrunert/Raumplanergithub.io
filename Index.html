@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Raumvergabe – INVEO / TwoSystem</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    h1 {
+      margin: 0 0 4px;
+    }
+
+    h1 span {
+      font-size: 0.8em;
+      font-weight: 400;
+      color: #4b5563;
+    }
+
+    .subtitle {
+      margin: 0 0 12px;
+      font-size: 0.85rem;
+      color: #4b5563;
+    }
+
+    .flex-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .login-box, .controls-box {
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      margin-bottom: 12px;
+    }
+
+    .login-box {
+      flex: 1 1 280px;
+    }
+
+    .controls-box {
+      flex: 1 1 260px;
+    }
+
+    label {
+      font-size: 0.85rem;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"], input[type="email"], input[type="date"], select {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      font-size: 0.9rem;
+    }
+
+    button {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+    }
+
+    .btn-secondary {
+      background: #4b5563;
+      color: #ffffff;
+    }
+
+    .btn-secondary:hover {
+      background: #374151;
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: #ffffff;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .btn-small {
+      padding: 4px 8px;
+      font-size: 0.8rem;
+    }
+
+    .legend {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      font-size: 0.8rem;
+      margin: 6px 0 10px;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .legend-box {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      border: 1px solid #9ca3af;
+    }
+
+    .legend-free {
+      background: #22c55e;
+    }
+
+    .legend-booked {
+      background: #ef4444;
+    }
+
+    .legend-disabled {
+      background: #e5e7eb;
+    }
+
+    .small-text {
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 0.8rem;
+    }
+
+    th, td {
+      border: 1px solid #e5e7eb;
+      padding: 4px;
+      text-align: center;
+    }
+
+    th {
+      background: #f3f4f6;
+      font-weight: 600;
+    }
+
+    .time-col {
+      width: 70px;
+      background: #f9fafb;
+      font-weight: 600;
+    }
+
+    .slot {
+      cursor: pointer;
+      transition: background 0.15s, transform 0.05s;
+      min-height: 26px;
+    }
+
+    .slot:hover {
+      transform: scale(1.02);
+    }
+
+    .slot-free {
+      background: #bbf7d0; /* hellgrün */
+    }
+
+    .slot-booked {
+      background: #fecaca; /* hellrot */
+    }
+
+    .slot-disabled {
+      background: #f3f4f6;
+      color: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    .user-info {
+      font-size: 0.8rem;
+      margin-top: 4px;
+      color: #374151;
+    }
+
+    .error {
+      margin-top: 10px;
+      padding: 8px;
+      background: #fee2e2;
+      color: #b91c1c;
+      border-radius: 6px;
+      display: none;
+      font-size: 0.85rem;
+    }
+
+    .success {
+      margin-top: 10px;
+      padding: 8px;
+      background: #dcfce7;
+      color: #166534;
+      border-radius: 6px;
+      display: none;
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 800px) {
+      .time-col {
+        width: 55px;
+        font-size: 0.7rem;
+      }
+      th, td {
+        padding: 3px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Raumvergabe <span>INVEO / TwoSystem</span></h1>
+    <p class="subtitle">
+      4 Räume im 1. OG (Raum 1–2 nur <strong>INVEO</strong>, Raum 3–4 nur <strong>TwoSystem</strong>),<br>
+      2 Räume im 2. OG (für beide Firmen). Vergabe im 30-Minuten-Takt von 07:00–20:00.
+    </p>
+
+    <div class="flex-row">
+      <!-- Login / User -->
+      <div class="login-box">
+        <div id="loginFormSection">
+          <h3 style="margin-top:0;">Login</h3>
+          <label>
+            Name
+            <input type="text" id="loginName" placeholder="z.B. Max Mustermann" />
+          </label>
+          <label>
+            E-Mail
+            <input type="email" id="loginEmail" placeholder="name@firma.de" />
+          </label>
+          <label>
+            Firma
+            <select id="loginCompany">
+              <option value="">Bitte wählen…</option>
+              <option value="Inveo">Inveo</option>
+              <option value="TwoSystem">TwoSystem</option>
+            </select>
+          </label>
+          <button class="btn-primary" id="loginBtn" type="button">Einloggen</button>
+          <p class="small-text">
+            Die Daten (Name, E-Mail, Firma) werden nur lokal im Browser gespeichert, um Buchungen zuzuordnen.
+          </p>
+        </div>
+
+        <div id="userInfoSection" style="display:none;">
+          <h3 style="margin-top:0;">Angemeldet</h3>
+          <div class="user-info">
+            <div><strong id="userNameLabel"></strong></div>
+            <div><span id="userCompanyLabel"></span></div>
+            <div><span id="userEmailLabel"></span></div>
+          </div>
+          <button class="btn-secondary btn-small" id="logoutBtn" type="button">Logout</button>
+        </div>
+      </div>
+
+      <!-- Datum & Aktionen -->
+      <div class="controls-box">
+        <h3 style="margin-top:0;">Tag wählen</h3>
+        <label>
+          Datum:
+          <input type="date" id="dateInput" />
+        </label>
+        <div style="margin-top:8px; display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="btn-secondary btn-small" id="todayBtn" type="button">Heute</button>
+          <button class="btn-danger btn-small" id="clearDayBtn" type="button">Tag leeren</button>
+          <button class="btn-danger btn-small" id="clearAllBtn" type="button">Alle Daten löschen</button>
+        </div>
+        <div class="legend">
+          <div class="legend-item">
+            <div class="legend-box legend-free"></div> frei
+          </div>
+          <div class="legend-item">
+            <div class="legend-box legend-booked"></div> belegt
+          </div>
+          <div class="legend-item">
+            <div class="legend-box legend-disabled"></div> nicht für Ihre Firma buchbar
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <table id="scheduleTable">
+      <!-- Dynamisch gefüllt -->
+    </table>
+
+    <div id="errorBox" class="error"></div>
+    <div id="successBox" class="success"></div>
+  </div>
+
+  <script>
+    // --- Konfiguration: Räume & Zeiten ---
+    // company: "Inveo", "TwoSystem" oder "Beide"
+    const ROOMS = [
+      { id: "1OG-R1", name: "1. OG – Raum 1 (Inveo)",     floor: "1. OG", company: "Inveo" },
+      { id: "1OG-R2", name: "1. OG – Raum 2 (Inveo)",     floor: "1. OG", company: "Inveo" },
+      { id: "1OG-R3", name: "1. OG – Raum 3 (TwoSystem)", floor: "1. OG", company: "TwoSystem" },
+      { id: "1OG-R4", name: "1. OG – Raum 4 (TwoSystem)", floor: "1. OG", company: "TwoSystem" },
+      { id: "2OG-R1", name: "2. OG – Raum 1 (beide)",     floor: "2. OG", company: "Beide" },
+      { id: "2OG-R2", name: "2. OG – Raum 2 (beide)",     floor: "2. OG", company: "Beide" },
+    ];
+
+    const START_HOUR = 7;
+    const END_HOUR = 20;
+    const SLOT_MINUTES = 30; // 30-Minuten-Takt
+
+    // Neue Version, damit alte einfache Daten nicht stören
+    const STORAGE_KEY = "raumvergabe_slots_inveo_twosystem_v2";
+    const USER_KEY = "raumvergabe_user_inveo_twosystem";
+
+    // Struktur bookings:
+    // { "YYYY-MM-DD": { "ROOMID": { "HH:MM": {name, email, company} } } }
+    let bookings = {};
+    let currentUser = null;
+
+    // --- DOM-Elemente ---
+    const dateInput = document.getElementById("dateInput");
+    const todayBtn = document.getElementById("todayBtn");
+    const clearDayBtn = document.getElementById("clearDayBtn");
+    const clearAllBtn = document.getElementById("clearAllBtn");
+    const scheduleTable = document.getElementById("scheduleTable");
+    const errorBox = document.getElementById("errorBox");
+    const successBox = document.getElementById("successBox");
+
+    const loginNameInput = document.getElementById("loginName");
+    const loginEmailInput = document.getElementById("loginEmail");
+    const loginCompanySelect = document.getElementById("loginCompany");
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    const loginFormSection = document.getElementById("loginFormSection");
+    const userInfoSection = document.getElementById("userInfoSection");
+    const userNameLabel = document.getElementById("userNameLabel");
+    const userCompanyLabel = document.getElementById("userCompanyLabel");
+    const userEmailLabel = document.getElementById("userEmailLabel");
+
+    // --- Hilfsfunktionen ---
+    function showError(msg) {
+      errorBox.textContent = msg;
+      errorBox.style.display = "block";
+      setTimeout(() => (errorBox.style.display = "none"), 3500);
+    }
+
+    function showSuccess(msg) {
+      successBox.textContent = msg;
+      successBox.style.display = "block";
+      setTimeout(() => (successBox.style.display = "none"), 2500);
+    }
+
+    function pad(num) {
+      return num.toString().padStart(2, "0");
+    }
+
+    function generateTimeSlots() {
+      const slots = [];
+      let hour = START_HOUR;
+      let minute = 0;
+      while (hour < END_HOUR || (hour === END_HOUR && minute === 0)) {
+        const timeStr = `${pad(hour)}:${pad(minute)}`;
+        slots.push(timeStr);
+        minute += SLOT_MINUTES;
+        if (minute >= 60) {
+          minute = 0;
+          hour += 1;
+        }
+        if (hour === END_HOUR && minute > 0) break; // Ende bei 20:00
+      }
+      return slots;
+    }
+
+    const TIME_SLOTS = generateTimeSlots();
+
+    function getTodayISO() {
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = pad(d.getMonth() + 1);
+      const day = pad(d.getDate());
+      return `${year}-${month}-${day}`;
+    }
+
+    // --- Speicherfunktionen ---
+    function loadBookings() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        try {
+          bookings = JSON.parse(raw) || {};
+        } catch {
+          bookings = {};
+        }
+      } else {
+        bookings = {};
+      }
+    }
+
+    function saveBookings() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(bookings));
+    }
+
+    function loadUser() {
+      const raw = localStorage.getItem(USER_KEY);
+      if (!raw) {
+        currentUser = null;
+        updateUserUI();
+        return;
+      }
+      try {
+        const user = JSON.parse(raw);
+        if (user && user.name && user.email && user.company) {
+          currentUser = user;
+        } else {
+          currentUser = null;
+        }
+      } catch {
+        currentUser = null;
+      }
+      updateUserUI();
+    }
+
+    function saveUser() {
+      if (currentUser) {
+        localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
+      } else {
+        localStorage.removeItem(USER_KEY);
+      }
+    }
+
+    function getBooking(date, roomId, time) {
+      if (
+        bookings[date] &&
+        bookings[date][roomId] &&
+        bookings[date][roomId][time]
+      ) {
+        return bookings[date][roomId][time];
+      }
+      return null;
+    }
+
+    function isSlotBooked(date, roomId, time) {
+      return !!getBooking(date, roomId, time);
+    }
+
+    function canUserBookRoom(user, room) {
+      if (!user) return false;
+      if (room.company === "Beide") return true;
+      return room.company === user.company;
+    }
+
+    function toggleSlot(date, room, time) {
+      if (!currentUser) {
+        showError("Bitte zuerst mit Name, E-Mail und Firma einloggen.");
+        return;
+      }
+
+      if (!canUserBookRoom(currentUser, room)) {
+        showError(`Dieser Raum kann nur von ${room.company} gebucht werden.`);
+        return;
+      }
+
+      if (!bookings[date]) bookings[date] = {};
+      if (!bookings[date][room.id]) bookings[date][room.id] = {};
+
+      const existing = bookings[date][room.id][time];
+
+      if (!existing) {
+        // Neue Buchung
+        bookings[date][room.id][time] = {
+          name: currentUser.name,
+          email: currentUser.email,
+          company: currentUser.company
+        };
+        showSuccess(`Slot ${time} für ${room.name} gebucht.`);
+      } else {
+        // Nur der gleiche Nutzer (per E-Mail) darf löschen
+        if (existing.email !== currentUser.email) {
+          showError(
+            `Dieser Slot wurde von ${existing.name} (${existing.company}) gebucht und kann nur von dieser Person freigegeben werden.`
+          );
+          return;
+        }
+        delete bookings[date][room.id][time];
+        if (Object.keys(bookings[date][room.id]).length === 0) {
+          delete bookings[date][room.id];
+        }
+        if (Object.keys(bookings[date]).length === 0) {
+          delete bookings[date];
+        }
+        showSuccess(`Slot ${time} für ${room.name} freigegeben.`);
+      }
+
+      saveBookings();
+    }
+
+    function clearDay(date) {
+      if (bookings[date]) {
+        delete bookings[date];
+        saveBookings();
+      }
+    }
+
+    function clearAll() {
+      bookings = {};
+      saveBookings();
+    }
+
+    // --- Login / User-UI ---
+    function updateUserUI() {
+      if (currentUser) {
+        userNameLabel.textContent = currentUser.name;
+        userCompanyLabel.textContent = currentUser.company;
+        userEmailLabel.textContent = currentUser.email;
+        loginFormSection.style.display = "none";
+        userInfoSection.style.display = "block";
+      } else {
+        loginFormSection.style.display = "block";
+        userInfoSection.style.display = "none";
+      }
+      renderTable();
+    }
+
+    loginBtn.addEventListener("click", () => {
+      const name = loginNameInput.value.trim();
+      const email = loginEmailInput.value.trim();
+      const company = loginCompanySelect.value;
+
+      if (!name || !email || !company) {
+        showError("Bitte Name, E-Mail und Firma ausfüllen.");
+        return;
+      }
+
+      if (!email.includes("@")) {
+        showError("Bitte eine gültige E-Mail-Adresse eingeben.");
+        return;
+      }
+
+      currentUser = { name, email, company };
+      saveUser();
+      updateUserUI();
+      showSuccess("Erfolgreich eingeloggt.");
+    });
+
+    logoutBtn.addEventListener("click", () => {
+      if (!confirm("Wirklich ausloggen? Buchungen bleiben erhalten.")) return;
+      currentUser = null;
+      saveUser();
+      updateUserUI();
+    });
+
+    // --- Rendering der Tabelle ---
+    function renderTable() {
+      const date = dateInput.value || getTodayISO();
+      scheduleTable.innerHTML = "";
+
+      // Kopfzeile: Zeit + Räume
+      const headerRow = document.createElement("tr");
+      const timeTh = document.createElement("th");
+      timeTh.className = "time-col";
+      timeTh.textContent = "Zeit";
+      headerRow.appendChild(timeTh);
+
+      ROOMS.forEach(room => {
+        const th = document.createElement("th");
+        th.textContent = room.name;
+        headerRow.appendChild(th);
+      });
+
+      scheduleTable.appendChild(headerRow);
+
+      // Zeilen für jede Uhrzeit
+      TIME_SLOTS.forEach(time => {
+        const tr = document.createElement("tr");
+
+        const timeTd = document.createElement("td");
+        timeTd.className = "time-col";
+        timeTd.textContent = time;
+        tr.appendChild(timeTd);
+
+        ROOMS.forEach(room => {
+          const td = document.createElement("td");
+          td.classList.add("slot");
+
+          const booking = getBooking(date, room.id, time);
+          const userCanBook = currentUser && canUserBookRoom(currentUser, room);
+
+          if (booking) {
+            td.classList.add("slot-booked");
+            // Anzeige: Name, ggf. gekürzt
+            const shortName =
+              booking.name.length > 14
+                ? booking.name.slice(0, 13) + "…"
+                : booking.name;
+            td.textContent = shortName || "belegt";
+            td.title = `Gebucht von ${booking.name} (${booking.company}) - ${booking.email}`;
+          } else {
+            if (!currentUser) {
+              td.classList.add("slot-disabled");
+              td.textContent = "Login";
+              td.title = "Bitte zuerst einloggen, um zu buchen.";
+            } else if (!userCanBook) {
+              td.classList.add("slot-disabled");
+              td.textContent = "gesperrt";
+              td.title = `Dieser Raum kann nur von ${room.company} gebucht werden.`;
+            } else {
+              td.classList.add("slot-free");
+              td.textContent = "frei";
+              td.title = `${room.name} – ${time}`;
+            }
+          }
+
+          td.addEventListener("click", () => {
+            if (!currentUser) {
+              showError("Bitte zuerst mit Name, E-Mail und Firma einloggen.");
+              return;
+            }
+            // Wenn Raum nicht für diese Firma frei schaltbar ist und Slot leer -> blocken
+            if (!booking && !canUserBookRoom(currentUser, room)) {
+              showError(`Dieser Raum kann nur von ${room.company} gebucht werden.`);
+              return;
+            }
+            toggleSlot(date, room, time);
+            renderTable();
+          });
+
+          tr.appendChild(td);
+        });
+
+        scheduleTable.appendChild(tr);
+      });
+    }
+
+    // --- Event-Handler Datum & Aktionen ---
+    dateInput.addEventListener("change", () => {
+      renderTable();
+    });
+
+    todayBtn.addEventListener("click", () => {
+      dateInput.value = getTodayISO();
+      renderTable();
+    });
+
+    clearDayBtn.addEventListener("click", () => {
+      const date = dateInput.value || getTodayISO();
+      if (confirm(`Alle Buchungen für den ${date} löschen?`)) {
+        clearDay(date);
+        renderTable();
+      }
+    });
+
+    clearAllBtn.addEventListener("click", () => {
+      if (confirm("Wirklich alle gespeicherten Buchungen für alle Tage löschen?")) {
+        clearAll();
+        renderTable();
+      }
+    });
+
+    // --- Initialisierung ---
+    (function init() {
+      loadBookings();
+      loadUser();
+      dateInput.value = getTodayISO();
+      renderTable();
+    })();
+  </script>
+</body>
+</html>
